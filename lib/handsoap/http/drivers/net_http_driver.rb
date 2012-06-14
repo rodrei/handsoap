@@ -62,10 +62,10 @@ module Handsoap
             end
           end
           # net/http only supports basic auth. We raise a warning if the server requires something else.
-          if http_response.code == 401 && http_response.get_headers['www-authenticate']
-            auth_type = http_response.get_headers['www-authenticate'].chomp.match(/\w+/)[0].downcase
-            if auth_type != "basic"
-              raise "Authentication type #{auth_type} is unsupported by net/http"
+          auth_types = http_response.get_headers['www-authenticate']
+          if http_response.code.to_i == 401 && auth_types.any?
+            unless auth_types.include?("basic")
+              raise "Authentication types #{auth_types.join(",")} are unsupported by net/http"
             end
           end
           parse_http_part(http_response.get_headers, http_response.body, http_response.code)
